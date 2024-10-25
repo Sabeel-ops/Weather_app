@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Monitor - Indian Metros</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #1a73e8;
+            font-size: 1.5em;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            background-color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #666;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .unit-toggle {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toggle-button {
+            padding: 8px 16px;
+            border: 2px solid #1a73e8;
+            background-color: white;
+            color: #1a73e8;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-button.active {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+        .time-filter select {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+            color: #333;
+        }
+
+        /* Grid Layouts */
+        .weather-grid, .summaries-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Cards */
+        .weather-card, .summary-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .weather-card h2, .summary-card h2 {
+            margin-top: 0;
+            color: #1a73e8;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        /* Current Weather Specifics */
+        .temperature {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .condition {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #e3f2fd;
+            border-radius: 15px;
+            margin: 5px 0;
+            color: #1a73e8;
+        }
+
+        .weather-details {
+            margin-top: 15px;
+        }
+
+        .weather-details p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        /* Summary Tables */
+        .summary-table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 10px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        .summary-table th,
+        .summary-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            white-space: nowrap;
+        }
+
+        .summary-table th {
+            background-color: #f8f9fa;
+            color: #666;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+        }
+
+        .summary-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .weather-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            background-color: #e3f2fd;
+            color: #1a73e8;
+            white-space: nowrap;
+        }
+
+        /* Timestamps */
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .weather-grid, .summaries-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.2em;
+            }
+
+            .nav-tab {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>Weather Monitor - Indian Metros</h1>
+            <div class="unit-toggle">
+                <button id="celsiusBtn" class="toggle-button active" onclick="setUnit('celsius')">°C</button>
+                <button id="fahrenheitBtn" class="toggle-button" onclick="setUnit('fahrenheit')">°F</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showView('current')">Current Weather</button>
+            <button class="nav-tab" onclick="showView('summary')">Daily Summaries</button>
+        </div>
+
+        <div class="controls">
+            <div class="time-filter">
+                <select id="timeRange" onchange="handleTimeRangeChange()">
+                    <option value="7">Last 7 days</option>
+                    <option value="14">Last 14 days</option>
+                    <option value="30">Last 30 days</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="currentWeatherView" class="weather-grid">
+            <!-- Current weather cards will be inserted here -->
+        </div>
+
+        <div id="summaryView" class="summaries-grid" style="display: none;">
+            <!-- Summary cards will be inserted here -->
+        </div>
+    </div>
+
+    <script>
+        let currentUnit = 'celsius';
+        let currentView = 'current';
+        let weatherData = {};
+        let summaryData = {};
+
+        // View Management
+        function showView(view) {
+            currentView = view;
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.innerText.toLowerCase().includes(view));
+            });
+            document.getElementById('currentWeatherView').style.display = view === 'current' ? 'grid' : 'none';
+            document.getElementById('summaryView').style.display = view === 'summary' ? 'grid' : 'none';
+            
+            if (view === 'current') {
+                fetchCurrentWeather();
+            } else {
+                fetchWeatherSummaries();
+            }
+        }
+
+        // Temperature Unit Management
+        function setUnit(unit) {
+            currentUnit = unit;
+            updateToggleButtons();
+            
+            fetch(`/api/set-unit/${unit}`)
+                .then(response => response.json())
+                .then(() => {
+                    if (currentView === 'current') {
+                        updateCurrentWeatherDisplay(weatherData);
+                    } else {
+                        updateSummaryDisplay(summaryData);
+                    }
+                })
+                .catch(error => console.error('Error setting unit:', error));
+        }
+
+        function updateToggleButtons() {
+            document.getElementById('celsiusBtn').classList.toggle('active', currentUnit === 'celsius');
+            document.getElementById('fahrenheitBtn').classList.toggle('active', currentUnit === 'fahrenheit');
+        }
+
+        // Temperature Formatting
+        function formatTemperature(temp_c, temp_f) {
+            return currentUnit === 'celsius' ? `${temp_c}°C` : `${temp_f}°F`;
+        }
+
+        // Current Weather Display
+        function updateCurrentWeatherDisplay(data) {
+            const grid = document.getElementById('currentWeatherView');
+            grid.innerHTML = '';
+            
+            for (const [city, weather] of Object.entries(data)) {
+                const temp = formatTemperature(weather.temperature_c, weather.temperature_f);
+                const feels = formatTemperature(weather.feels_like_c, weather.feels_like_f);
+                
+                const card = `
+                    <div class="weather-card">
+                        <h2>${city}</h2>
+                        <div class="temperature">${temp}</div>
+                        <div class="condition">${weather.main_condition}</div>
+                        <div class="weather-details">
+                            <p>Feels like: ${feels}</p>
+                            <p>Humidity: ${weather.humidity}%</p>
+                            <p>Wind Speed: ${weather.wind_speed} m/s</p>
+                        </div>
+                        <div class="timestamp">
+                            Last updated: ${weather.timestamp}
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            }
+        }
+
+        // Summary Display
+        function updateSummaryDisplay(data) {
+            const grid = document.getElementById('summaryView');
+            grid.innerHTML = '';
+            
+            for (const [city, summaries] of Object.entries(data)) {
+                if (summaries.length === 0) continue;
+                
+                const card = `
+                    <div class="summary-card">
+                        <h2>${city}</h2>
+                        <div class="summary-table-container">
+                            <table class="summary-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Avg Temp</th>
+                                        <th>Max/Min</th>
+                                        <th>Weather</th>
+                                        <th>Dominant Weather</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${summaries.map(summary => `
+                                        <tr>
+                                            <td>${formatDate(summary.date)}</td>
+                                            <td>${formatTemperature(summary.avg_temp, (summary.avg_temp * 9/5 + 32))}</td>
+                                            <td>${formatTemperature(summary.max_temp, (summary.max_temp * 9/5 + 32))} / ${
+                                                formatTemperature(summary.min_temp, (summary.min_temp * 9/5 + 32))}</td>
+                                            <td>
+                                                <span class="weather-badge">
+                                                    ${summary.dominant_condition}
+                                                    (${Math.round(summary.condition_frequency * 100 / summary.total_readings)}%)
+                                                </span>
+                                            </td>
+                                            <td>${summary.dominant_condition}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            }
+        }
+
+        // Data Fetching
+        function fetchCurrentWeather() {
+            fetch('/api/weather')
+                .then(response => response.json())
+                .then(data => {
+                    weatherData = data;
+                    updateCurrentWeatherDisplay(data);
+                })
+                .catch(error => console.error('Error fetching weather data:', error));
+        }
+
+        function fetchWeatherSummaries() {
+            const days = document.getElementById('timeRange').value;
+            fetch(`/api/daily-summaries?days=${days}`)
+                .then(response => response.json())
+                .then(data => {
+                    summaryData = data;
+                    updateSummaryDisplay(data);
+                })
+                .catch(error => console.error('Error fetching summaries:', error));
+        }
+
+        function handleTimeRangeChange() {
+            if (currentView === 'summary') {
+                fetchWeatherSummaries();
+            }
+        }
+
+        // Date Formatting
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // Initial Setup
+        document.addEventListener('DOMContentLoaded', () => {
+            updateToggleButtons();
+            showView('current');
+            // Start periodic updates for current weather
+            setInterval(fetchCurrentWeather, 60000); // Update every minute
+        });
+    </script>
+</body>
+</html>
